@@ -117,10 +117,14 @@ def read_slots(config):
                         slots.extend(rows)
                         if last>=until:break
                         next_link=page.get_by_role('link',name='翌週',exact=True)
-                        if next_link.count()==0:break # published horizon reached
+                        if next_link.count()==0:raise RuntimeError('Next-week link missing before scan horizon; incomplete scan')
                         if next_link.count()!=1:raise RuntimeError('Ambiguous next-week link')
                         next_link.click();time.sleep(site.get('delay_ms',2000)/1000)
                     if not seen:raise RuntimeError('No dates observed')
+                    # Never treat an incomplete date range as a complete scan.
+                    expected={today+dt.timedelta(days=i) for i in range((until-today).days+1)}
+                    missing=expected-seen
+                    if missing:raise RuntimeError(f'Incomplete date coverage: {len(missing)} dates missing; first={min(missing)}')
                     # Published days may end before 90-day horizon; record coverage explicitly.
                     output['targets'][key]={'name':target['name'],'slots':slots,'first_date':min(seen).isoformat(),'last_date':max(seen).isoformat(),'days_seen':sorted(d.isoformat() for d in seen)}
                 except Exception as exc:
