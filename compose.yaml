@@ -1,0 +1,14 @@
+services:
+  monitor:
+    build: .
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Tokyo
+      INTERVAL_MINUTES: ${INTERVAL_MINUTES:-30}
+      STOP_ON_ERROR: '1'
+      SITE_ACCESS_APPROVED: ${SITE_ACCESS_APPROVED:-no}
+      LINE_CHANNEL_ACCESS_TOKEN: ${LINE_CHANNEL_ACCESS_TOKEN:-}
+      STATE_DB: /state/state.sqlite3
+      LINE_TO: ${LINE_TO:-}
+    volumes:
+      - ./state:/state
